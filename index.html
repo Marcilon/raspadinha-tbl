@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>TBL Raspadinha Virtual - Engenharia Econômica</title>
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
+    h2 { text-align: center; color: #1a365d; margin-bottom: 5px; }
+    p.sub { text-align: center; color: #666; font-size: 14px; margin-top: 0; }
+    
+    .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .question { font-weight: bold; color: #2d3748; margin-bottom: 15px; font-size: 15px; }
+    .option-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .option-text { font-size: 14px; color: #4a5568; flex: 1; padding-right: 10px; }
+    
+    /* Container da Raspadinha */
+    .scratch-container { position: relative; width: 110px; height: 40px; border-radius: 6px; overflow: hidden; }
+    .behind-content { 
+      position: absolute; width: 100%; height: 100%; 
+      display: flex; align-items: center; justify-content: center; 
+      font-weight: bold; font-size: 12px; text-align: center; border-radius: 6px;
+    }
+    .correct { background-color: #c6f6d5; color: #22543d; }
+    .wrong { background-color: #fed7d7; color: #742a2a; }
+    canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; touch-action: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <h2>Cartela TBL - Eng. Econômica</h2>
+  <p class="sub">Raspe com o dedo sobre a opção escolhida</p>
+
+  <div id="quiz-container"></div>
+
+  <script>
+    // GABARITO E QUESTÕES (Altere o gabarito conforme sua prova)
+    const questions = [
+      {
+        id: 1,
+        title: "Q1. Taxa nominal de 12% a.a. com capitalização mensal possui taxa efetiva:",
+        options: [
+          { letter: "A", text: "Exatamente 12% a.a.", correct: false },
+          { letter: "B", text: "Menor que 12% a.a.", correct: false },
+          { letter: "C", text: "Maior que 12% a.a.", correct: true },
+          { letter: "D", text: "Igual a 1% a.a.", correct: false }
+        ]
+      },
+      {
+        id: 2,
+        title: "Q2. O objetivo principal da Contabilidade Gerencial é:",
+        options: [
+          { letter: "A", text: "Atender obrigações fiscais", correct: false },
+          { letter: "B", text: "Apoiar a tomada de decisão interna", correct: true },
+          { letter: "C", text: "Apenas histórico para auditoria", correct: false },
+          { letter: "D", text: "Calcular ações na bolsa", correct: false }
+        ]
+      }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      questions.forEach((q) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        
+        let html = `<div class="question">${q.title}</div>`;
+        
+        q.options.forEach((opt, optIndex) => {
+          const statusClass = opt.correct ? 'correct' : 'wrong';
+          const statusText = opt.correct ? '★ CORRETO' : '❌ ERRADO';
+          const canvasId = `canvas-${q.id}-${optIndex}`;
+
+          html += `
+            <div class="option-row">
+              <div class="option-text"><b>${opt.letter})</b> ${opt.text}</div>
+              <div class="scratch-container">
+                <div class="behind-content ${statusClass}">${statusText}</div>
+                <canvas id="${canvasId}" width="110" height="40"></canvas>
+              </div>
+            </div>
+          `;
+        });
+        
+        card.innerHTML = html;
+        container.appendChild(card);
+
+        // Inicializa a camada "raspável" cinza em cada canvas
+        q.options.forEach((_, optIndex) => {
+          initCanvas(`canvas-${q.id}-${optIndex}`);
+        });
+      });
+    }
+
+    function initCanvas(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+
+      // Desenha a cobertura prata/cinza
+      ctx.fillStyle = '#a0aec0';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#4a5568';
+      ctx.font = '11px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('RASPE AQUI', canvas.width / 2, 24);
+
+      let isDrawing = false;
+
+      function scratch(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches ? e.touches[0] : e;
+        const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
+        const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
+
+        ctx.globalCompositeOperation = 'destination-out'; // Remove a tinta cinza
+        ctx.beginPath();
+        ctx.arc(x, y, 12, 0, Math.PI * 2); // Tamanho da "ponta do dedo"
+        ctx.fill();
+      }
+
+      // Eventos de Toque no Celular (Android/iOS)
+      canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); });
+      canvas.addEventListener('touchmove', scratch);
+      canvas.addEventListener('touchend', () => { isDrawing = false; });
+
+      // Eventos de Mouse (para testes no Computador)
+      canvas.addEventListener('mousedown', (e) => { isDrawing = true; scratch(e); });
+      canvas.addEventListener('mousemove', scratch);
+      canvas.addEventListener('mouseup', () => { isDrawing = false; });
+    }
+
+    window.onload = renderQuiz;
+  </script>
+</body>
+</html>
