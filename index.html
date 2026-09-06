@@ -242,26 +242,30 @@
 
     document.addEventListener("visibilitychange", function() {
       if (document.hidden && !isSubmitted) {
-        tabSwitchCount++;
+       let tabSwitchCount = 0;
 
-        if (tabSwitchCount === 1) {
-          alert("⚠️ ATENÇÃO: Você saiu da tela do teste!\n\nO professor foi notificado sobre esta ocorrência. HAVERÁ PENALIDADE DE 20% NA NOTA!! Por favor, mantenha a tela aberta até a finalização.");
-        } 
-        else if (tabSwitchCount === 2) {
-          alert("⚠️ AVISO CRÍTICO: Segunda saída detectada!\n\nSe você sair da tela mais uma vez, seu teste será BLOQUEADO AUTOMATICAMENTE e enviado no estado atual. PENALIDADE DE 40%!!.");
-        } 
-        else if (tabSwitchCount >= 3) {
-          alert("🚫 TESTE BLOQUEADO!\n\nVocê excedeu o limite de 3 saídas permitidas da tela. Suas respostas atuais foram encerradas e enviadas ao professor. PENALIDADE DE 100%!!");
-          
-          document.body.style.pointerEvents = "none";
-          document.body.style.opacity = "0.5";
+document.addEventListener("visibilitychange", function() {
+  if (document.hidden && !isSubmitted) {
+    tabSwitchCount++;
+    attempts["TrocasTela"] = tabSwitchCount; // Registra o número exato no JSON
 
-          attempts["Infração"] = "Bloqueado por troca de tela (3x)";
+    if (tabSwitchCount === 1) {
+      alert("⚠️ ATENÇÃO: Você saiu da tela do teste!\n\nO professor foi notificado. (1ª infração: penalidade de 20% na nota).");
+    } 
+    else if (tabSwitchCount === 2) {
+      alert("⚠️ AVISO CRÍTICO: Segunda saída detectada!\n\nSe você sair mais uma vez, o teste será BLOQUEADO. (2ª infração: penalidade de 40% na nota).");
+    } 
+    else if (tabSwitchCount >= 3) {
+      alert("🚫 TESTE BLOQUEADO!\n\nVocê excedeu o limite de 3 saídas da tela. Seu teste foi encerrado com nota ZERO.");
+      
+      document.body.style.pointerEvents = "none";
+      document.body.style.opacity = "0.5";
 
-          submitResults(true);
-        }
-      }
-    });
+      attempts["Infração"] = "Bloqueado por troca de tela (3x)";
+      submitResults(true);
+    }
+  }
+});
 
     window.onload = renderQuiz;
   </script>
