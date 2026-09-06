@@ -101,9 +101,12 @@
 
     let attempts = {}; 
     let isSubmitted = false;
+    let tabSwitchCount = 0;
 
     function renderQuiz() {
       const container = document.getElementById('quiz-container');
+      container.innerHTML = ''; // Limpa o container
+      
       questions.forEach((q) => {
         attempts[q.id] = 0;
         const card = document.createElement('div');
@@ -137,6 +140,7 @@
 
     function initCanvas(canvasId, qId) {
       const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
       const ctx = canvas.getContext('2d');
 
       ctx.fillStyle = '#a0aec0';
@@ -150,7 +154,6 @@
       let counted = false;
 
       function scratch(e) {
-        // Trava de segurança: impede o toque/clique se a equipe não foi informada
         const teamInput = document.getElementById('teamName').value.trim();
         if (!teamInput) {
           alert("⚠️ Digite o Nome ou Número da Equipe antes de começar a raspar!");
@@ -238,34 +241,28 @@
       });
     }
 
-    let tabSwitchCount = 0;
-
     document.addEventListener("visibilitychange", function() {
       if (document.hidden && !isSubmitted) {
-       let tabSwitchCount = 0;
+        tabSwitchCount++;
+        attempts["TrocasTela"] = tabSwitchCount;
 
-document.addEventListener("visibilitychange", function() {
-  if (document.hidden && !isSubmitted) {
-    tabSwitchCount++;
-    attempts["TrocasTela"] = tabSwitchCount; // Registra o número exato no JSON
+        if (tabSwitchCount === 1) {
+          alert("⚠️ ATENÇÃO: Você saiu da tela do teste!\n\nO professor foi notificado. (1ª infração: penalidade de 20% na nota).");
+        } 
+        else if (tabSwitchCount === 2) {
+          alert("⚠️ AVISO CRÍTICO: Segunda saída detectada!\n\nSe você sair mais uma vez, o teste será BLOQUEADO. (2ª infração: penalidade de 40% na nota).");
+        } 
+        else if (tabSwitchCount >= 3) {
+          alert("🚫 TESTE BLOQUEADO!\n\nVocê excedeu o limite de 3 saídas da tela. Seu teste foi encerrado com nota ZERO.");
+          
+          document.body.style.pointerEvents = "none";
+          document.body.style.opacity = "0.5";
 
-    if (tabSwitchCount === 1) {
-      alert("⚠️ ATENÇÃO: Você saiu da tela do teste!\n\nO professor foi notificado. (1ª infração: penalidade de 20% na nota).");
-    } 
-    else if (tabSwitchCount === 2) {
-      alert("⚠️ AVISO CRÍTICO: Segunda saída detectada!\n\nSe você sair mais uma vez, o teste será BLOQUEADO. (2ª infração: penalidade de 40% na nota).");
-    } 
-    else if (tabSwitchCount >= 3) {
-      alert("🚫 TESTE BLOQUEADO!\n\nVocê excedeu o limite de 3 saídas da tela. Seu teste foi encerrado com nota ZERO.");
-      
-      document.body.style.pointerEvents = "none";
-      document.body.style.opacity = "0.5";
-
-      attempts["Infração"] = "Bloqueado por troca de tela (3x)";
-      submitResults(true);
-    }
-  }
-});
+          attempts["Infração"] = "Bloqueado por troca de tela (3x)";
+          submitResults(true);
+        }
+      }
+    });
 
     window.onload = renderQuiz;
   </script>
