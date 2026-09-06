@@ -178,30 +178,38 @@
     }
 
     // ENVIO DE RESULTADOS PARA O PROFESSOR
-    function submitResults() {
-      const team = document.getElementById('teamName').value;
-      if (!team) {
-        alert("Por favor, digite o nome ou número da equipe antes de enviar.");
-        return;
-      }
+   function submitResults() {
+  const team = document.getElementById('teamName').value;
+  if (!team) {
+    alert("Por favor, digite o nome ou número da equipe antes de enviar.");
+    return;
+  }
 
-      // COLOQUE SEU LINK DO FORMSPREE NA LINHA ABAIXO
-      const formspreeUrl = "https://formspree.io/f/SEU_CODIGO_AQUI";
+  // Cole aqui o link gerado na implantação do Apps Script
+  const googleScriptUrl = "COLE_SEU_LINK_DO_APPS_SCRIPT_AQUI";
 
-      fetch(formspreeUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          Equipe: team,
-          Tentativas_Por_Questao: attempts,
-          Data: new Date().toLocaleString()
-        })
-      }).then(response => {
-        alert("Respostas enviadas com sucesso ao professor!");
-      }).catch(error => {
-        alert("Erro ao enviar. Verifique sua conexão.");
-      });
-    }
+  const btn = document.querySelector('.finish-btn');
+  btn.innerText = "Enviando...";
+  btn.disabled = true;
+
+  fetch(googleScriptUrl, {
+    method: 'POST',
+    mode: 'no-cors', // Evita bloqueio de segurança CORS no navegador
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      Equipe: team,
+      Tentativas_Por_Questao: attempts,
+      Data: new Date().toLocaleString('pt-BR')
+    })
+  }).then(() => {
+    alert("Respostas enviadas com sucesso ao professor!");
+    btn.innerText = "Respostas Enviadas ✓";
+  }).catch(error => {
+    alert("Erro ao enviar. Verifique sua conexão.");
+    btn.innerText = "Finalizar e Enviar Respostas";
+    btn.disabled = false;
+  });
+}
 
     window.onload = renderQuiz;
   </script>
