@@ -178,36 +178,46 @@
     }
 
     // ENVIO DE RESULTADOS PARA O PROFESSOR
-   function submitResults() {
+  function submitResults() {
   const team = document.getElementById('teamName').value;
   if (!team) {
-    alert("Por favor, digite o nome ou número da equipe antes de enviar.");
+    alert("Por favor, digite o nome da equipe antes de enviar.");
     return;
   }
 
-  // Cole aqui o link gerado na implantação do Apps Script
-  const googleScriptUrl = "COLE_SEU_LINK_DO_APPS_SCRIPT_AQUI";
+  // Cole a URL do Power Automate entre as aspas abaixo:
+  const powerAutomateUrl = "https://default73319f4289084b899f8d558cf4d5d7.76.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/05/workflows/5b4d3809afcb4da390d5740aeee9fc06/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=81jQ15aZFZeRtYCuoikAfmNsItCeqgSDcuA96_xpG1k";
 
   const btn = document.querySelector('.finish-btn');
-  btn.innerText = "Enviando...";
-  btn.disabled = true;
+  if (btn) {
+    btn.innerText = "Enviando...";
+    btn.disabled = true;
+  }
 
-  fetch(googleScriptUrl, {
+  fetch(powerAutomateUrl, {
     method: 'POST',
-    mode: 'no-cors', // Evita bloqueio de segurança CORS no navegador
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      Data: new Date().toLocaleString('pt-BR'),
       Equipe: team,
-      Tentativas_Por_Questao: attempts,
-      Data: new Date().toLocaleString('pt-BR')
+      Detalhes: JSON.stringify(attempts)
     })
-  }).then(() => {
-    alert("Respostas enviadas com sucesso ao professor!");
-    btn.innerText = "Respostas Enviadas ✓";
-  }).catch(error => {
-    alert("Erro ao enviar. Verifique sua conexão.");
-    btn.innerText = "Finalizar e Enviar Respostas";
-    btn.disabled = false;
+  })
+  .then(response => {
+    if (response.ok) {
+      alert("Respostas enviadas com sucesso!");
+      if (btn) btn.innerText = "Enviado ✓";
+    } else {
+      throw new Error("Erro na requisição");
+    }
+  })
+  .catch(error => {
+    console.error(error);
+    alert("Erro ao enviar respostas. Tente novamente.");
+    if (btn) {
+      btn.innerText = "Finalizar e Enviar Respostas";
+      btn.disabled = false;
+    }
   });
 }
 
