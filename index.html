@@ -100,7 +100,7 @@
     ];
 
     let attempts = {}; 
-    let isSubmitted = false; // Controle de estado para evitar envios duplicados
+    let isSubmitted = false;
 
     function renderQuiz() {
       const container = document.getElementById('quiz-container');
@@ -150,6 +150,15 @@
       let counted = false;
 
       function scratch(e) {
+        // Trava de segurança: impede o toque/clique se a equipe não foi informada
+        const teamInput = document.getElementById('teamName').value.trim();
+        if (!teamInput) {
+          alert("⚠️ Digite o Nome ou Número da Equipe antes de começar a raspar!");
+          isDrawing = false;
+          document.getElementById('teamName').focus();
+          return;
+        }
+
         if (!isDrawing) return;
         e.preventDefault();
         
@@ -178,11 +187,12 @@
     }
 
     function submitResults(isForced = false) {
-      if (isSubmitted) return; // Se já enviou, ignora novas chamadas
+      if (isSubmitted) return;
 
-      let team = document.getElementById('teamName').value;
+      let team = document.getElementById('teamName').value.trim();
       if (!team && !isForced) {
         alert("Por favor, digite o nome da equipe antes de enviar.");
+        document.getElementById('teamName').focus();
         return;
       }
 
@@ -198,7 +208,7 @@
         btn.disabled = true;
       }
 
-      isSubmitted = true; // Marca como enviado
+      isSubmitted = true;
 
       fetch(powerAutomateUrl, {
         method: 'POST',
@@ -228,37 +238,30 @@
       });
     }
 
-   let tabSwitchCount = 0;
+    let tabSwitchCount = 0;
 
-document.addEventListener("visibilitychange", function() {
-  // Executa apenas se a página ficou oculta e se a prova ainda não foi enviada
-  if (document.hidden && !isSubmitted) {
-    tabSwitchCount++;
+    document.addEventListener("visibilitychange", function() {
+      if (document.hidden && !isSubmitted) {
+        tabSwitchCount++;
 
-    if (tabSwitchCount === 1) {
-      // 1ª Tentativa: Notifica que o professor já foi avisado
-      alert("⚠️ ATENÇÃO: Você saiu da tela do teste!\n\nO professor foi notificado sobre esta ocorrência. HAVERÁ PENALIDADE NA NOTA! Por favor, mantenha a tela aberta até a finalização.");
-    } 
-    else if (tabSwitchCount === 2) {
-      // 2ª Tentativa: Alerta de bloqueio na próxima
-      alert("⚠️ AVISO CRÍTICO: Segunda saída detectada!\n\nSe você sair da tela mais uma vez, seu teste será BLOQUEADO AUTOMATICAMENTE e enviado no estado atual.");
-    } 
-    else if (tabSwitchCount >= 3) {
-      // 3ª Tentativa: Bloqueio definitivo + envio forçado
-      alert("🚫 TESTE BLOQUEADO!\n\nVocê excedeu o limite de 3 saídas permitidas da tela. Suas respostas atuais foram encerradas e enviadas ao professor E O TESTE SERÁ ZERADO.");
-      
-      // Congela a tela para impedir novas respostas
-      document.body.style.pointerEvents = "none";
-      document.body.style.opacity = "0.5";
+        if (tabSwitchCount === 1) {
+          alert("⚠️ ATENÇÃO: Você saiu da tela do teste!\n\nO professor foi notificado sobre esta ocorrência. HAVERÁ PENALIDADE DE 20% NA NOTA!! Por favor, mantenha a tela aberta até a finalização.");
+        } 
+        else if (tabSwitchCount === 2) {
+          alert("⚠️ AVISO CRÍTICO: Segunda saída detectada!\n\nSe você sair da tela mais uma vez, seu teste será BLOQUEADO AUTOMATICAMENTE e enviado no estado atual. PENALIDADE DE 40%!!.");
+        } 
+        else if (tabSwitchCount >= 3) {
+          alert("🚫 TESTE BLOQUEADO!\n\nVocê excedeu o limite de 3 saídas permitidas da tela. Suas respostas atuais foram encerradas e enviadas ao professor. PENALIDADE DE 100%!!");
+          
+          document.body.style.pointerEvents = "none";
+          document.body.style.opacity = "0.5";
 
-      // Grava a marcação de bloqueio no JSON
-      attempts["Infração"] = "Bloqueado por troca de tela (3x)";
+          attempts["Infração"] = "Bloqueado por troca de tela (3x)";
 
-      // Força o envio mesmo se o nome da equipe estiver em branco
-      submitResults(true);
-    }
-  }
-});
+          submitResults(true);
+        }
+      }
+    });
 
     window.onload = renderQuiz;
   </script>
