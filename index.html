@@ -3,28 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>TBL Raspadinha Virtual - Engenharia Econômica</title>
+  <title>TBL Raspadinha - Eng. Econômica</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
     h2 { text-align: center; color: #1a365d; margin-bottom: 5px; }
     p.sub { text-align: center; color: #666; font-size: 14px; margin-top: 0; }
     
+    .setup-box { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .setup-box input { width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; margin-top: 5px; }
+
     .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     .question { font-weight: bold; color: #2d3748; margin-bottom: 15px; font-size: 15px; }
     .option-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .option-text { font-size: 14px; color: #4a5568; flex: 1; padding-right: 10px; }
     
-    /* Container da Raspadinha */
     .scratch-container { position: relative; width: 110px; height: 40px; border-radius: 6px; overflow: hidden; }
     .behind-content { 
       position: absolute; width: 100%; height: 100%; 
       display: flex; align-items: center; justify-content: center; 
-      font-weight: bold; font-size: 12px; text-align: center; border-radius: 6px;
+      font-weight: bold; font-size: 11px; text-align: center; border-radius: 6px;
     }
     .correct { background-color: #c6f6d5; color: #22543d; }
     .wrong { background-color: #fed7d7; color: #742a2a; }
     canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; touch-action: none; cursor: pointer; }
+    
+    .finish-btn { background: #2b6cb0; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -32,39 +36,78 @@
   <h2>Cartela TBL - Eng. Econômica</h2>
   <p class="sub">Raspe com o dedo sobre a opção escolhida</p>
 
+  <div class="setup-box">
+    <label><b>Nome ou Número da Equipe:</b></label>
+    <input type="text" id="teamName" placeholder="Ex: Grupo 1 - Turma A">
+  </div>
+
   <div id="quiz-container"></div>
 
+  <button class="finish-btn" onclick="submitResults()">Finalizar e Enviar Respostas</button>
+
   <script>
-    // GABARITO E QUESTÕES (Altere o gabarito conforme sua prova)
+    // AS 5 QUESTÕES DA SUA AULA
     const questions = [
       {
         id: 1,
-        title: "Q1. Taxa nominal de 12% a.a. com capitalização mensal possui taxa efetiva:",
+        title: "Q1. Uma empresa financiou um capital à taxa nominal de 12% a.a. com capitalização mensal. A taxa efetiva anual é:",
         options: [
-          { letter: "A", text: "Exatamente 12% a.a.", correct: false },
+          { letter: "A", text: "Exatamente igual a 12% a.a.", correct: false },
           { letter: "B", text: "Menor que 12% a.a.", correct: false },
-          { letter: "C", text: "Maior que 12% a.a.", correct: true },
+          { letter: "C", text: "Maior que 12% a.a. devido aos juros compostos.", correct: true },
           { letter: "D", text: "Igual a 1% a.a.", correct: false }
         ]
       },
       {
         id: 2,
-        title: "Q2. O objetivo principal da Contabilidade Gerencial é:",
+        title: "Q2. Qual o objetivo central da Contabilidade Gerencial?",
         options: [
-          { letter: "A", text: "Atender obrigações fiscais", correct: false },
-          { letter: "B", text: "Apoiar a tomada de decisão interna", correct: true },
-          { letter: "C", text: "Apenas histórico para auditoria", correct: false },
-          { letter: "D", text: "Calcular ações na bolsa", correct: false }
+          { letter: "A", text: "Cumprir exigências fiscais e tributárias.", correct: false },
+          { letter: "B", text: "Fornecer informações internas para tomada de decisão.", correct: true },
+          { letter: "C", text: "Registrar histórico para auditorias externas.", correct: false },
+          { letter: "D", text: "Determinar valor de mercado das ações.", correct: false }
+        ]
+      },
+      {
+        id: 3,
+        title: "Q3. Comparando SAF (Price) e SAC para o mesmo valor, prazo e taxa:",
+        options: [
+          { letter: "A", text: "SAC tem prestações constantes e mais juros.", correct: false },
+          { letter: "B", text: "SAF tem amortização crescente e prestação decrescente.", correct: false },
+          { letter: "C", text: "SAC tem amortização constante e menor total de juros.", correct: true },
+          { letter: "D", text: "SACRE mantém prestação fixa igual ao SAF.", correct: false }
+        ]
+      },
+      {
+        id: 4,
+        title: "Q4. Projeto com VPL > 0 e TIR > TMA indica que:",
+        options: [
+          { letter: "A", text: "Deve ser rejeitado.", correct: false },
+          { letter: "B", text: "O IL é menor que 1,0.", correct: false },
+          { letter: "C", text: "O projeto agrega valor e é viável financeiramente.", correct: true },
+          { letter: "D", text: "O Payback é igual ao prazo limite.", correct: false }
+        ]
+      },
+      {
+        id: 5,
+        title: "Q5. Em Racionamento de Capital com projetos independentes de VPL positivo:",
+        options: [
+          { letter: "A", text: "Selecionar menor Payback Descontado.", correct: false },
+          { letter: "B", text: "Maximizar o VPL total dentro do orçamento limite.", correct: true },
+          { letter: "C", text: "Escolher maiores TIRs independentemente do capital.", correct: false },
+          { letter: "D", text: "Dividir o orçamento igualmente entre todos.", correct: false }
         ]
       }
     ];
 
+    let attempts = {}; // Guarda número de tentativas por questão
+
     function renderQuiz() {
       const container = document.getElementById('quiz-container');
       questions.forEach((q) => {
+        attempts[q.id] = 0;
         const card = document.createElement('div');
         card.className = 'card';
-        
         let html = `<div class="question">${q.title}</div>`;
         
         q.options.forEach((opt, optIndex) => {
@@ -86,18 +129,16 @@
         card.innerHTML = html;
         container.appendChild(card);
 
-        // Inicializa a camada "raspável" cinza em cada canvas
         q.options.forEach((_, optIndex) => {
-          initCanvas(`canvas-${q.id}-${optIndex}`);
+          initCanvas(`canvas-${q.id}-${optIndex}`, q.id);
         });
       });
     }
 
-    function initCanvas(canvasId) {
+    function initCanvas(canvasId, qId) {
       const canvas = document.getElementById(canvasId);
       const ctx = canvas.getContext('2d');
 
-      // Desenha a cobertura prata/cinza
       ctx.fillStyle = '#a0aec0';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = '#4a5568';
@@ -106,31 +147,60 @@
       ctx.fillText('RASPE AQUI', canvas.width / 2, 24);
 
       let isDrawing = false;
+      let counted = false;
 
       function scratch(e) {
         if (!isDrawing) return;
         e.preventDefault();
         
+        if (!counted) {
+          attempts[qId]++;
+          counted = true;
+        }
+
         const rect = canvas.getBoundingClientRect();
         const touch = e.touches ? e.touches[0] : e;
         const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
         const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
 
-        ctx.globalCompositeOperation = 'destination-out'; // Remove a tinta cinza
+        ctx.globalCompositeOperation = 'destination-out';
         ctx.beginPath();
-        ctx.arc(x, y, 12, 0, Math.PI * 2); // Tamanho da "ponta do dedo"
+        ctx.arc(x, y, 12, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // Eventos de Toque no Celular (Android/iOS)
       canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); });
       canvas.addEventListener('touchmove', scratch);
       canvas.addEventListener('touchend', () => { isDrawing = false; });
-
-      // Eventos de Mouse (para testes no Computador)
       canvas.addEventListener('mousedown', (e) => { isDrawing = true; scratch(e); });
       canvas.addEventListener('mousemove', scratch);
       canvas.addEventListener('mouseup', () => { isDrawing = false; });
+    }
+
+    // ENVIO DE RESULTADOS PARA O PROFESSOR
+    function submitResults() {
+      const team = document.getElementById('teamName').value;
+      if (!team) {
+        alert("Por favor, digite o nome ou número da equipe antes de enviar.");
+        return;
+      }
+
+      // COLOQUE SEU LINK DO FORMSPREE NA LINHA ABAIXO
+      const formspreeUrl = "https://formspree.io/f/SEU_CODIGO_AQUI";
+
+      fetch(formspreeUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          Equipe: team,
+          Tentativas_Por_Questao: attempts,
+          Data: new Date().toLocaleString()
+        })
+      }).then(response => {
+        alert("Respostas enviadas com sucesso ao professor!");
+      }).catch(error => {
+        alert("Erro ao enviar. Verifique sua conexão.");
+      });
     }
 
     window.onload = renderQuiz;
