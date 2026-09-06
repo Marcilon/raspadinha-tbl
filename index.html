@@ -228,30 +228,37 @@
       });
     }
 
-    let tabSwitchCount = 0;
+   let tabSwitchCount = 0;
 
-    document.addEventListener("visibilitychange", function() {
-      if (document.hidden && !isSubmitted) {
-        tabSwitchCount++;
+document.addEventListener("visibilitychange", function() {
+  // Executa apenas se a página ficou oculta e se a prova ainda não foi enviada
+  if (document.hidden && !isSubmitted) {
+    tabSwitchCount++;
 
-        if (tabSwitchCount === 1) {
-          alert("⚠️ ATENÇÃO: Você saiu da tela do teste!\n\nNão mude de aba ou aplicativo durante a aplicação. Esta foi sua 1ª advertência.");
-        } 
-        else if (tabSwitchCount === 2) {
-          alert("⚠️ AVISO GRAVE: O professor foi notificado sobre a sua saída da tela!\n\nCaso saia novamente, seu teste será BLOQUEADO e enviado imediatamente.");
-        } 
-        else if (tabSwitchCount >= 3) {
-          alert("🚫 TESTE BLOQUEADO!\n\nVocê excedeu o limite de saídas permitidas da tela. Suas respostas atuais foram enviadas ao professor.");
-          
-          document.body.style.pointerEvents = "none";
-          document.body.style.opacity = "0.5";
+    if (tabSwitchCount === 1) {
+      // 1ª Tentativa: Notifica que o professor já foi avisado
+      alert("⚠️ ATENÇÃO: Você saiu da tela do teste!\n\nO professor foi notificado sobre esta ocorrência. HAVERÁ PENALIDADE NA NOTA! Por favor, mantenha a tela aberta até a finalização.");
+    } 
+    else if (tabSwitchCount === 2) {
+      // 2ª Tentativa: Alerta de bloqueio na próxima
+      alert("⚠️ AVISO CRÍTICO: Segunda saída detectada!\n\nSe você sair da tela mais uma vez, seu teste será BLOQUEADO AUTOMATICAMENTE e enviado no estado atual.");
+    } 
+    else if (tabSwitchCount >= 3) {
+      // 3ª Tentativa: Bloqueio definitivo + envio forçado
+      alert("🚫 TESTE BLOQUEADO!\n\nVocê excedeu o limite de 3 saídas permitidas da tela. Suas respostas atuais foram encerradas e enviadas ao professor E O TESTE SERÁ ZERADO.");
+      
+      // Congela a tela para impedir novas respostas
+      document.body.style.pointerEvents = "none";
+      document.body.style.opacity = "0.5";
 
-          attempts["Infração"] = "Bloqueado por troca de tela (3x)";
+      // Grava a marcação de bloqueio no JSON
+      attempts["Infração"] = "Bloqueado por troca de tela (3x)";
 
-          submitResults(true); // Passa true para forçar o envio mesmo sem nome digitado
-        }
-      }
-    });
+      // Força o envio mesmo se o nome da equipe estiver em branco
+      submitResults(true);
+    }
+  }
+});
 
     window.onload = renderQuiz;
   </script>
