@@ -46,7 +46,6 @@
   <button class="finish-btn" onclick="submitResults()">Finalizar e Enviar Respostas</button>
 
   <script>
-    // AS 5 QUESTÕES DA SUA AULA
     const questions = [
       {
         id: 1,
@@ -100,7 +99,8 @@
       }
     ];
 
-    let attempts = {}; // Guarda número de tentativas por questão
+    let attempts = {}; 
+    let isSubmitted = false; // Controle de estado para evitar envios duplicados
 
     function renderQuiz() {
       const container = document.getElementById('quiz-container');
@@ -177,49 +177,81 @@
       canvas.addEventListener('mouseup', () => { isDrawing = false; });
     }
 
-    // ENVIO DE RESULTADOS PARA O PROFESSOR
-  function submitResults() {
-  const team = document.getElementById('teamName').value;
-  if (!team) {
-    alert("Por favor, digite o nome da equipe antes de enviar.");
-    return;
-  }
+    function submitResults(isForced = false) {
+      if (isSubmitted) return; // Se já enviou, ignora novas chamadas
 
-  // Cole a URL do Power Automate entre as aspas abaixo:
-  const powerAutomateUrl = "https://default73319f4289084b899f8d558cf4d5d7.76.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/05/workflows/5b4d3809afcb4da390d5740aeee9fc06/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=81jQ15aZFZeRtYCuoikAfmNsItCeqgSDcuA96_xpG1k";
+      let team = document.getElementById('teamName').value;
+      if (!team && !isForced) {
+        alert("Por favor, digite o nome da equipe antes de enviar.");
+        return;
+      }
 
-  const btn = document.querySelector('.finish-btn');
-  if (btn) {
-    btn.innerText = "Enviando...";
-    btn.disabled = true;
-  }
+      if (!team && isForced) {
+        team = "EQUIPE NÃO IDENTIFICADA (Bloqueada por infração)";
+      }
 
-  fetch(powerAutomateUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      Data: new Date().toLocaleString('pt-BR'),
-      Equipe: team,
-      Detalhes: JSON.stringify(attempts)
-    })
-  })
-  .then(response => {
-    if (response.ok) {
-      alert("Respostas enviadas com sucesso!");
-      if (btn) btn.innerText = "Enviado ✓";
-    } else {
-      throw new Error("Erro na requisição");
+      const powerAutomateUrl = "https://default73319f4289084b899f8d558cf4d5d7.76.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/05/workflows/5b4d3809afcb4da390d5740aeee9fc06/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=81jQ15aZFZeRtYCuoikAfmNsItCeqgSDcuA96_xpG1k";
+
+      const btn = document.querySelector('.finish-btn');
+      if (btn) {
+        btn.innerText = "Enviando...";
+        btn.disabled = true;
+      }
+
+      isSubmitted = true; // Marca como enviado
+
+      fetch(powerAutomateUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          Data: new Date().toLocaleString('pt-BR'),
+          Equipe: team,
+          Detalhes: JSON.stringify(attempts)
+        })
+      })
+      .then(response => {
+        if (response.ok) {
+          alert(isForced ? "Teste bloqueado e enviado!" : "Respostas enviadas com sucesso!");
+          if (btn) btn.innerText = "Enviado ✓";
+        } else {
+          throw new Error("Erro na requisição");
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        alert("Erro ao enviar respostas. Tente novamente.");
+        isSubmitted = false;
+        if (btn) {
+          btn.innerText = "Finalizar e Enviar Respostas";
+          btn.disabled = false;
+        }
+      });
     }
-  })
-  .catch(error => {
-    console.error(error);
-    alert("Erro ao enviar respostas. Tente novamente.");
-    if (btn) {
-      btn.innerText = "Finalizar e Enviar Respostas";
-      btn.disabled = false;
-    }
-  });
-}
+
+    let tabSwitchCount = 0;
+
+    document.addEventListener("visibilitychange", function() {
+      if (document.hidden && !isSubmitted) {
+        tabSwitchCount++;
+
+        if (tabSwitchCount === 1) {
+          alert("⚠️ ATENÇÃO: Você saiu da tela do teste!\n\nNão mude de aba ou aplicativo durante a aplicação. Esta foi sua 1ª advertência.");
+        } 
+        else if (tabSwitchCount === 2) {
+          alert("⚠️ AVISO GRAVE: O professor foi notificado sobre a sua saída da tela!\n\nCaso saia novamente, seu teste será BLOQUEADO e enviado imediatamente.");
+        } 
+        else if (tabSwitchCount >= 3) {
+          alert("🚫 TESTE BLOQUEADO!\n\nVocê excedeu o limite de saídas permitidas da tela. Suas respostas atuais foram enviadas ao professor.");
+          
+          document.body.style.pointerEvents = "none";
+          document.body.style.opacity = "0.5";
+
+          attempts["Infração"] = "Bloqueado por troca de tela (3x)";
+
+          submitResults(true); // Passa true para forçar o envio mesmo sem nome digitado
+        }
+      }
+    });
 
     window.onload = renderQuiz;
   </script>
