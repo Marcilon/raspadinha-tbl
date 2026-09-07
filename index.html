@@ -1,111 +1,144 @@
 <!DOCTYPE html>
+<!-- Define o tipo de documento como HTML5 -->
 <html lang="pt-BR">
+<!-- Inicia o documento HTML configurado para o idioma Português do Brasil -->
+
 <head>
+  <!-- Define a codificação de caracteres como UTF-8 para aceitar acentos e ç -->
   <meta charset="UTF-8">
+  <!-- Ajusta a tela para dispositivos móveis, impedindo que o aluno dê zoom e desfigure a raspadinha -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <!-- Define o título da aba do navegador -->
   <title>TBL Raspadinha - Eng. Econômica - Prof. Marcilon Fonseca</title>
+  
   <style>
+    /* Aplica caixa de tamanho universal e impede seleção acidental de texto ao raspar */
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    /* Estiliza o fundo da página, margens e fonte padrão */
     body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
+    /* Estiliza o título principal */
     h2 { text-align: center; color: #1a365d; margin-bottom: 5px; }
+    /* Estiliza o subtítulo indicativo */
     p.sub { text-align: center; color: #666; font-size: 14px; margin-top: 0; }
     
+    /* Caixa branca de identificação da equipe */
     .setup-box { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    /* Campo de texto onde o aluno digita o nome do grupo */
     .setup-box input { width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; margin-top: 5px; }
 
+    /* Estiliza o card branco de cada questão */
     .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    /* Estiliza o texto do enunciado da questão */
     .question { font-weight: bold; color: #2d3748; margin-bottom: 15px; font-size: 15px; }
+    /* Alinha a alternativa e o canvas da raspadinha lado a lado */
     .option-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    /* Ajusta o texto da opção */
     .option-text { font-size: 14px; color: #4a5568; flex: 1; padding-right: 10px; }
     
+    /* Container que sobrepõe a raspadinha ao resultado oculto */
     .scratch-container { position: relative; width: 110px; height: 40px; border-radius: 6px; overflow: hidden; }
+    /* Conteúdo escondido que fica Atrás da tinta da raspadinha */
     .behind-content { 
       position: absolute; width: 100%; height: 100%; 
       display: flex; align-items: center; justify-content: center; 
       font-weight: bold; font-size: 11px; text-align: center; border-radius: 6px;
     }
+    /* Cor de fundo verde para a opção certa */
     .correct { background-color: #c6f6d5; color: #22543d; }
+    /* Cor de fundo vermelha para a opção errada */
     .wrong { background-color: #fed7d7; color: #742a2a; }
+    /* Elemento visual do canvas (tinta cinza) posicionada sobre o resultado */
     canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; touch-action: none; cursor: pointer; }
     
+    /* Botão azul de envio final no rodapé */
     .finish-btn { background: #2b6cb0; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
 
+  <!-- Título visível na página -->
   <h2>Cartela TBL - Eng. Econômica</h2>
+  <!-- Instrução rápida para o aluno -->
   <p class="sub">Raspe com o dedo sobre a opção escolhida</p>
 
+  <!-- Campo inicial obrigatório para identificar a equipe -->
   <div class="setup-box">
     <label><b>Nome ou Número da Equipe:</b></label>
     <input type="text" id="teamName" placeholder="Ex: Grupo 1 - Turma A">
   </div>
 
+  <!-- Div vazia onde o JavaScript vai injetar dinamicamente as 5 questões -->
   <div id="quiz-container"></div>
 
+  <!-- Botão acionador da função de envio -->
   <button class="finish-btn" onclick="submitResults()">Finalizar e Enviar Respostas</button>
 
   <script>
+    // Estrutura de dados contendo o banco de questões, alternativas e o gabarito (correct: true/false)
     const questions = [
       {
         id: 1,
-        title: "Q1. Uma empresa financiou um capital à taxa nominal de 12% a.a. com capitalização mensal. A taxa efetiva anual é:",
+        title: "Questão 1",
         options: [
-          { letter: "A", text: "Exatamente igual a 12% a.a.", correct: false },
-          { letter: "B", text: "Menor que 12% a.a.", correct: false },
-          { letter: "C", text: "Maior que 12% a.a. devido aos juros compostos.", correct: true },
-          { letter: "D", text: "Igual a 1% a.a.", correct: false }
+          { letter: "A", correct: false },
+          { letter: "B", correct: false },
+          { letter: "C", correct: false },
+          { letter: "D", correct: true }
         ]
       },
       {
         id: 2,
-        title: "Q2. Qual o objetivo central da Contabilidade Gerencial?",
+        title: "Questão 2",
         options: [
-          { letter: "A", text: "Cumprir exigências fiscais e tributárias.", correct: false },
-          { letter: "B", text: "Fornecer informações internas para tomada de decisão.", correct: true },
-          { letter: "C", text: "Registrar histórico para auditorias externas.", correct: false },
-          { letter: "D", text: "Determinar valor de mercado das ações.", correct: false }
+          { letter: "A", correct: false },
+          { letter: "B", correct: true },
+          { letter: "C", correct: false },
+          { letter: "D", correct: false }
         ]
       },
       {
         id: 3,
-        title: "Q3. Comparando SAF (Price) e SAC para o mesmo valor, prazo e taxa:",
+        title: "Questão 3",
         options: [
-          { letter: "A", text: "SAC tem prestações constantes e mais juros.", correct: false },
-          { letter: "B", text: "SAF tem amortização crescente e prestação decrescente.", correct: false },
-          { letter: "C", text: "SAC tem amortização constante e menor total de juros.", correct: true },
-          { letter: "D", text: "SACRE mantém prestação fixa igual ao SAF.", correct: false }
+          { letter: "A", correct: false },
+          { letter: "B", correct: false },
+          { letter: "C", correct: true },
+          { letter: "D", correct: false }
         ]
       },
       {
         id: 4,
-        title: "Q4. Projeto com VPL > 0 e TIR > TMA indica que:",
+        title: "Questão 4",
         options: [
-          { letter: "A", text: "Deve ser rejeitado.", correct: false },
-          { letter: "B", text: "O IL é menor que 1,0.", correct: false },
-          { letter: "C", text: "O projeto agrega valor e é viável financeiramente.", correct: true },
-          { letter: "D", text: "O Payback é igual ao prazo limite.", correct: false }
+          { letter: "A", correct: false },
+          { letter: "B", correct: false },
+          { letter: "C", correct: true },
+          { letter: "D", correct: false }
         ]
       },
       {
         id: 5,
-        title: "Q5. Em Racionamento de Capital com projetos independentes de VPL positivo:",
+        title: "Questão 5",
         options: [
-          { letter: "A", text: "Selecionar menor Payback Descontado.", correct: false },
-          { letter: "B", text: "Maximizar o VPL total dentro do orçamento limite.", correct: true },
-          { letter: "C", text: "Escolher maiores TIRs independentemente do capital.", correct: false },
-          { letter: "D", text: "Dividir o orçamento igualmente entre todos.", correct: false }
+          { letter: "A", correct: false },
+          { letter: "B", correct: false },
+          { letter: "C", correct: false },
+          { letter: "D", correct: true }
         ]
       }
     ];
 
+    // Dicionário para armazenar o número de raspadinhas (tentativas) por questão
     let attempts = {}; 
+    // Flag de controle para evitar múltiplos envios simultâneos
     let isSubmitted = false;
+    // Contador acumulativo de trocas/saídas da tela
     let tabSwitchCount = 0;
 
+    // Função que desenha e insere o HTML das questões na página
     function renderQuiz() {
       const container = document.getElementById('quiz-container');
-      container.innerHTML = ''; // Limpa o container
+      container.innerHTML = '';
       
       questions.forEach((q) => {
         attempts[q.id] = 0;
@@ -118,9 +151,10 @@
           const statusText = opt.correct ? '★ CORRETO' : '❌ ERRADO';
           const canvasId = `canvas-${q.id}-${optIndex}`;
 
+          // Linha simplificada: exibe apenas a Letra e a Raspadinha
           html += `
             <div class="option-row">
-              <div class="option-text"><b>${opt.letter})</b> ${opt.text}</div>
+              <div class="option-text"><b>${opt.letter})</b></div>
               <div class="scratch-container">
                 <div class="behind-content ${statusClass}">${statusText}</div>
                 <canvas id="${canvasId}" width="110" height="40"></canvas>
@@ -137,50 +171,87 @@
         });
       });
     }
+        
+        // Injeta o HTML montado dentro do card
+        card.innerHTML = html;
+        // Adiciona o card pronto na tela
+        container.appendChild(card);
 
+        // Inicializa as propriedades de tinta e clique de cada canvas
+        q.options.forEach((_, optIndex) => {
+          initCanvas(`canvas-${q.id}-${optIndex}`, q.id);
+        });
+      });
+    }
+
+    // Função que pinta o canvas de cinza e controla a remoção da tinta ao raspar
     function initCanvas(canvasId, qId) {
+      // Captura o elemento canvas pelo ID
       const canvas = document.getElementById(canvasId);
+      // Se o canvas não existir, interrompe
       if (!canvas) return;
+      // Obtém o contexto 2D para renderização de gráficos
       const ctx = canvas.getContext('2d');
 
+      // Define a cor da tinta (cinza claro)
       ctx.fillStyle = '#a0aec0';
+      // Pinta o retângulo inteiro cobrindo o texto
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Define a cor do texto do canvas
       ctx.fillStyle = '#4a5568';
+      // Define a fonte do texto
       ctx.font = '11px Arial';
+      // Alinha o texto no centro do botão
       ctx.textAlign = 'center';
+      // Escreve a instrução "RASPE AQUI" no centro da raspadinha
       ctx.fillText('RASPE AQUI', canvas.width / 2, 24);
 
+      // Controle interno de clique arrastado
       let isDrawing = false;
+      // Controle para contar apenas 1 tentativa por raspadinha aberta
       let counted = false;
 
+      // Função acionada ao tocar/clicar e arrastar sobre o canvas
       function scratch(e) {
+        // Captura o valor digitado no campo da equipe
         const teamInput = document.getElementById('teamName').value.trim();
+        // Se a equipe estiver em branco, bloqueia o ato de raspar
         if (!teamInput) {
           alert("⚠️ Digite o Nome ou Número da Equipe antes de começar a raspar!");
           isDrawing = false;
+          // Coloca o foco do teclado no campo de texto
           document.getElementById('teamName').focus();
           return;
         }
 
+        // Se não estiver pressionando o clique/toque, sai da função
         if (!isDrawing) return;
+        // Previne o rolamento padrão da tela ao raspar no celular
         e.preventDefault();
         
+        // Soma 1 tentativa no contador da questão se for a primeira raspada nesta opção
         if (!counted) {
           attempts[qId]++;
           counted = true;
         }
 
+        // Obtém a posição geográfica exata do toque em relação ao canvas
         const rect = canvas.getBoundingClientRect();
         const touch = e.touches ? e.touches[0] : e;
         const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
         const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
 
+        // Define o modo de borracha (apaga os pixels onde o dedo passa)
         ctx.globalCompositeOperation = 'destination-out';
+        // Inicia o caminho do círculo do "raspador"
         ctx.beginPath();
+        // Desenha o raio do corte transparente (borracha)
         ctx.arc(x, y, 12, 0, Math.PI * 2);
+        // Preenche apagando a tinta
         ctx.fill();
       }
 
+      // Adiciona escutadores de eventos para Toque (celular) e Clique (computador)
       canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); });
       canvas.addEventListener('touchmove', scratch);
       canvas.addEventListener('touchend', () => { isDrawing = false; });
@@ -189,40 +260,51 @@
       canvas.addEventListener('mouseup', () => { isDrawing = false; });
     }
 
+    // Função responsável por empacotar e disparar os dados para o Power Automate
     function submitResults(isForced = false) {
+      // Bloqueia execução se já estiver em processo de envio
       if (isSubmitted) return;
 
+      // Pega o nome do grupo digitado
       let team = document.getElementById('teamName').value.trim();
+      // Valida se está em branco e exige o preenchimento (se não for envio forçado)
       if (!team && !isForced) {
         alert("Por favor, digite o nome da equipe antes de enviar.");
         document.getElementById('teamName').focus();
         return;
       }
 
+      // Se for um envio forçado por bloqueio e sem nome, atribui identificação padrão
       if (!team && isForced) {
         team = "EQUIPE NÃO IDENTIFICADA (Bloqueada por infração)";
       }
 
+      // URL do Gatilho HTTP do seu fluxo no Power Automate
       const powerAutomateUrl = "https://default73319f4289084b899f8d558cf4d5d7.76.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/05/workflows/5b4d3809afcb4da390d5740aeee9fc06/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=81jQ15aZFZeRtYCuoikAfmNsItCeqgSDcuA96_xpG1k";
 
+      // Captura o elemento do botão de envio
       const btn = document.querySelector('.finish-btn');
+      // Muda a aparência do botão para avisar que está enviando
       if (btn) {
         btn.innerText = "Enviando...";
         btn.disabled = true;
       }
 
+      // Marca como enviado
       isSubmitted = true;
 
+      // Dispara a requisição HTTP POST assíncrona enviando o JSON
       fetch(powerAutomateUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          Data: new Date().toLocaleString('pt-BR'),
-          Equipe: team,
-          Detalhes: JSON.stringify(attempts)
+          Data: new Date().toLocaleString('pt-BR'), // Envia data e hora do envio
+          Equipe: team,                             // Envia nome da equipe
+          Detalhes: JSON.stringify(attempts)        // Envia o JSON com as tentativas e trocas de tela
         })
       })
       .then(response => {
+        // Trata o sucesso do recebimento
         if (response.ok) {
           alert(isForced ? "Teste bloqueado e enviado!" : "Respostas enviadas com sucesso!");
           if (btn) btn.innerText = "Enviado ✓";
@@ -231,6 +313,7 @@
         }
       })
       .catch(error => {
+        // Trata eventuais falhas de conexão
         console.error(error);
         alert("Erro ao enviar respostas. Tente novamente.");
         isSubmitted = false;
@@ -241,29 +324,40 @@
       });
     }
 
+    // Monitora a troca de abas / minimização do navegador no celular (Anti-cheat)
     document.addEventListener("visibilitychange", function() {
+      // Executa a lógica se a aba ficou oculta e a prova não foi finalizada
       if (document.hidden && !isSubmitted) {
+        // Incrementa o contador de trocas
         tabSwitchCount++;
+        // Grava a contagem atual dentro do dicionário que vai para o Excel
         attempts["TrocasTela"] = tabSwitchCount;
 
+        // Trata a 1ª infração (alerta de 20% de perda)
         if (tabSwitchCount === 1) {
           alert("⚠️ ATENÇÃO: Você saiu da tela do teste!\n\nO professor foi notificado. (1ª infração: penalidade de 20% na nota).");
         } 
+        // Trata a 2ª infração (alerta crítico de 40% de perda)
         else if (tabSwitchCount === 2) {
           alert("⚠️ AVISO CRÍTICO: Segunda saída detectada!\n\nSe você sair mais uma vez, o teste será BLOQUEADO. (2ª infração: penalidade de 40% na nota).");
         } 
+        // Trata a 3ª infração (bloqueio total e nota zero)
         else if (tabSwitchCount >= 3) {
           alert("🚫 TESTE BLOQUEADO!\n\nVocê excedeu o limite de 3 saídas da tela. Seu teste foi encerrado com nota ZERO.");
           
+          // Trava todos os cliques da página e deixa escura
           document.body.style.pointerEvents = "none";
           document.body.style.opacity = "0.5";
 
+          // Grava a flag textual de infração grave
           attempts["Infração"] = "Bloqueado por troca de tela (3x)";
+          // Dispara o envio forçado imediato dos dados
           submitResults(true);
         }
       }
     });
 
+    // Inicia a renderização do quiz assim que a página carregar por completo
     window.onload = renderQuiz;
   </script>
 </body>
