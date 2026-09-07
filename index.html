@@ -171,18 +171,6 @@
         });
       });
     }
-        
-        // Injeta o HTML montado dentro do card
-        card.innerHTML = html;
-        // Adiciona o card pronto na tela
-        container.appendChild(card);
-
-        // Inicializa as propriedades de tinta e clique de cada canvas
-        q.options.forEach((_, optIndex) => {
-          initCanvas(`canvas-${q.id}-${optIndex}`, q.id);
-        });
-      });
-    }
 
     // Função que pinta o canvas de cinza e controla a remoção da tinta ao raspar
     function initCanvas(canvasId, qId) {
